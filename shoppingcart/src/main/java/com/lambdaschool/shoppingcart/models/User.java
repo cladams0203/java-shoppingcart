@@ -1,6 +1,10 @@
 package com.lambdaschool.shoppingcart.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -28,11 +32,19 @@ public class User
 
     private String comments;
 
+    @Column(nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
+
     @OneToMany(mappedBy = "user",
             cascade = CascadeType.ALL)
     @JsonIgnoreProperties(value = "user",
             allowSetters = true)
     private List<Cart> carts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties(value = "user", allowSetters = true)
+    private List<UserRoles> roles = new ArrayList<>();
 
     public User()
     {
@@ -77,5 +89,36 @@ public class User
     public void setCarts(List<Cart> carts)
     {
         this.carts = carts;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPasswordNoEncrypt(String password){
+        this.password = password;
+    }
+
+    public void setPassword(String password) {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        this.password = passwordEncoder.encode(password);
+    }
+
+    public List<UserRoles> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<UserRoles> roles) {
+        this.roles = roles;
+    }
+
+    @JsonIgnore
+    public List<SimpleGrantedAuthority> getAuthority(){
+        List<SimpleGrantedAuthority> rtnList = new ArrayList<>();
+        for (UserRoles r : this.roles) {
+            String myRole = "ROLE_" + r.getRole().getName().toUpperCase();
+            rtnList.add(new SimpleGrantedAuthority(myRole));
+        }
+        return rtnList;
     }
 }
