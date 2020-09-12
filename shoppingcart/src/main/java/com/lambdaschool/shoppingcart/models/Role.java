@@ -26,6 +26,10 @@ public class Role extends Auditable {
     public Role() {
     }
 
+    public Role(String name) {
+        this.name = name.toUpperCase();
+    }
+
     public long getRoleid() {
         return roleid;
     }
@@ -35,11 +39,15 @@ public class Role extends Auditable {
     }
 
     public String getName() {
-        return name;
+        if (name == null){
+            return null;
+        } else {
+            return name.toUpperCase();
+        }
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name = name.toUpperCase();
     }
 
     public List<UserRoles> getUsers() {
